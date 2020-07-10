@@ -6,7 +6,23 @@ const check_document = function (doc: vscode.TextDocument): void {
     return;
   }
   let fold_next = false;
-  let regexes = [];
+  let regexes: any = vscode.workspace
+    .getConfiguration()
+    .get("autofold.more_fold_regexes"); // type unknown
+  try {
+    regexes = regexes.map((x: any) => new RegExp(x, "i")) || []; // separate line because we need to explicitly type the result of
+    // the first two methods
+  } catch (err) {
+    regexes = [];
+  }
+  let fold_regex: any = vscode.workspace
+    .getConfiguration()
+    .get("autofold.fold_regex");
+  if (fold_regex !== "") {
+    try {
+      regexes.push(new RegExp(fold_regex, "i"));
+    } catch (err) {}
+  }
   for (let i = 0; i < doc.lineCount; i++) {
     var line = doc.lineAt(i).text;
     if (/.+autofold\/fold_next$/.test(line)) {
@@ -25,14 +41,16 @@ const check_document = function (doc: vscode.TextDocument): void {
       });
       fold_next = false;
     }
+    let skip_rest = false;
     for (const regex of regexes) {
-      if (regex.test(line)) {
+      if (regex.test(line) && !skip_rest) {
         vscode.commands.executeCommand("editor.fold", {
           selectionLines: [i],
           levels: 1,
           direction: "down",
         });
         fold_next = false;
+        skip_rest = true;
       }
     }
   }

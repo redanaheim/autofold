@@ -39,6 +39,23 @@
           "group": "navigation@100"
         }
       ]
+    },
+    "configuration": {
+      "title": "Autofold",
+      "properties": {
+        "autofold.fold_regex": {
+          "type": "string",
+          "title": "Lines that match this regex will be folded in every file.",
+          "default": "",
+          "scope": "language-overridable"
+        },
+        "autofold.more_fold_regexes": {
+          "type": "array",
+          "title": "Lines that match any of these regexes will be folded in every file.",
+          "default": [],
+          "scope": "language-overridable"
+        }
+      }
     }
   },
   "scripts": {
