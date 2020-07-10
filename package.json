@@ -5,7 +5,7 @@
   "version": "0.0.1",
   "publisher": "tigergold59",
   "repository": {
-    "url": "https://github.com/tigergold59/electron-tas-ui"
+    "url": "https://github.com/tigergold59/autofold"
   },
   "engines": {
     "vscode": "^1.47.0"
