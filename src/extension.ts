@@ -1,29 +1,51 @@
 import * as vscode from "vscode";
 
+const is_string = function(thing?: unknown): thing is string {
+  if (thing === "") {
+      return true;
+  }
+  else if (!thing) {
+      return false;
+  }
+  else if (typeof thing === "string") {
+      return true;
+  }
+  else {
+      return false;
+  }
+}
+
 // autofold/fold_next
 const check_document = function (doc: vscode.TextDocument): void {
   if (doc === undefined) {
     return;
   }
   let fold_next = false;
-  let regexes: any = vscode.workspace
+  let regexes_no_type: any = vscode.workspace
     .getConfiguration()
     .get("autofold.more_fold_regexes"); // type unknown
-  try {
-    regexes = regexes.map((x: any) => new RegExp(x, "i")) || []; // separate line because we need to explicitly type the result of
-    // the first two methods
-  } catch (err) {
-    regexes = [];
+  let valid_regexes: RegExp[] = []
+  if (regexes_no_type instanceof Array) {
+    regexes_no_type.forEach(el => {
+      if (is_string(el)) {
+        try {
+          valid_regexes.push(new RegExp(el));
+        }
+        catch (err) {
+          return;
+        }
+      }
+    })
   }
   let fold_regex: any = vscode.workspace
     .getConfiguration()
     .get("autofold.fold_regex");
-  if (fold_regex !== "") {
+  if (fold_regex !== "" && typeof fold_regex === "string") {
     try {
-      regexes.push(new RegExp(fold_regex, "i"));
+      regexes_no_type.push(new RegExp(fold_regex));
     } catch (err) {}
   }
-  for (let i = 0; i < doc.lineCount; i++) {
+  for (let i = doc.lineCount - 1; i >= 0; i--) {
     var line = doc.lineAt(i).text;
     if (/.+autofold\/fold_next$/.test(line)) {
       fold_next = true;
@@ -31,7 +53,10 @@ const check_document = function (doc: vscode.TextDocument): void {
     }
     let regex_results = /.+autofold\/regex (.+)$/.exec(line);
     if (regex_results !== null) {
-      regexes.push(new RegExp(regex_results[1], "i"));
+      try {
+        valid_regexes.push(new RegExp(regex_results[1]));
+      }
+      catch (err) {}
     }
     if (fold_next) {
       vscode.commands.executeCommand("editor.fold", {
@@ -42,7 +67,7 @@ const check_document = function (doc: vscode.TextDocument): void {
       fold_next = false;
     }
     let skip_rest = false;
-    for (const regex of regexes) {
+    for (const regex of regexes_no_type) {
       if (regex.test(line) && !skip_rest) {
         vscode.commands.executeCommand("editor.fold", {
           selectionLines: [i],

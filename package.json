@@ -2,7 +2,7 @@
   "name": "autofold",
   "displayName": "autofold",
   "description": "Control automatically folded lines with code comments.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "tigergold59",
   "repository": {
     "url": "https://github.com/tigergold59/autofold"
